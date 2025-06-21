@@ -1,52 +1,76 @@
-# app.py
-from flask import Flask, render_template, request, jsonify
-from model.extractor import extract_features
-from scipy.spatial.distance import cosine
+from flask import Flask, request, jsonify, render_template
 import os
+import numpy as np
+from PIL import Image
+from io import BytesIO
 
 app = Flask(__name__)
-# CORS가 필요 없도록 같은 도메인에서 처리
 
-# 메모리에 일회 저장
-embeddings = {}
-roles = ['child','father','mother','pgrandpa','pgrandma','mgrandpa','mgrandma']
-labels = {
-    'child':'아이','father':'아빠','mother':'엄마',
-    'pgrandpa':'친할아버지','pgrandma':'친할머니',
-    'mgrandpa':'외할아버지','mgrandma':'외할머니'
-}
+UPLOAD_FOLDER = 'uploads'
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+# 얼굴 특징 저장 딕셔너리
+features = {}
 
 @app.route('/')
 def index():
-    return render_template('index.html', roles=roles, labels=labels)
+    return render_template('index.html')
 
 @app.route('/upload', methods=['POST'])
 def upload():
-    role = request.form.get('role')
-    file = request.files.get('image')
-    if role not in roles or not file:
-        return jsonify({'error':'invalid request'}),400
-    img_bytes = file.read()
     try:
-        vec = extract_features(img_bytes)
-    except Exception:
-        return jsonify({'error':'model error'}),500
-    embeddings[role] = vec.tolist()
-    return jsonify({'status':'ok','role':role})
+        role = request.form.get('role')
+        image = request.files.get('image')
+
+        if not role or not image:
+            return jsonify({'status': 'fail', 'error': 'No role or image'}), 400
+
+        # 이미지 로드 및 특징 추출 (224x224, RGB)
+        img = Image.open(image.stream).convert('RGB').resize((224, 224))
+        arr = np.asarray(img) / 255.0  # Normalize
+        feature = arr.flatten()
+
+        features[role] = feature.tolist()  # Flask에서는 list로 JSON 직렬화 가능
+
+        return jsonify({'status': 'ok'})
+    except Exception as e:
+        return jsonify({'status': 'fail', 'error': str(e)}), 500
 
 @app.route('/compare', methods=['POST'])
 def compare():
-    child = embeddings.get('child')
-    if not child:
-        return jsonify({'error':'아이 사진이 필요합니다.'}),400
-    results = []
-    for role, vec in embeddings.items():
-        if role=='child': continue
-        score = (1 - cosine(child, vec)) * 100
-        results.append({'role':role,'label':labels[role],'similarity':round(score,2)})
-    results.sort(key=lambda x: x['similarity'], reverse=True)
-    best = results[0] if results else None
-    return jsonify({'best_match':best,'all':results})
+    try:
+        if 'child' not in features:
+            return jsonify({'status': 'fail', 'error': 'No child uploaded'}), 400
 
-if __name__=='__main__':
-    app.run(host='0.0.0.0', port=int(os.environ.get('PORT',3000)))
+        child = np.array(features['child'])
+
+        result = []
+        for role, vec in features.items():
+            if role == 'child':
+                continue
+            other = np.array(vec)
+            sim = cosine_similarity(child, other)
+            result.append({
+                'label': role,
+                'similarity': round(sim * 100, 2)
+            })
+
+        if not result:
+            return jsonify({'status': 'fail', 'error': 'No other family uploaded'}), 400
+
+        best = max(result, key=lambda x: x['similarity'])
+
+        return jsonify({
+            'status': 'ok',
+            'best_match': best,
+            'all': sorted(result, key=lambda x: x['similarity'], reverse=True)
+        })
+    except Exception as e:
+        return jsonify({'status': 'fail', 'error': str(e)}), 500
+
+def cosine_similarity(a, b):
+    a, b = np.array(a), np.array(b)
+    return np.dot(a, b) / (np.linalg.norm(a) * np.linalg.norm(b))
+
+if __name__ == '__main__':
+    app.run(debug=True, port=3000)
