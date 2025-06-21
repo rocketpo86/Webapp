@@ -1,5 +1,3 @@
-// static/js/main.js (개선 디버깅 + 썸네일 + 자동 업로드)
-
 const roles = Array.from(document.querySelectorAll('.role'));
 let uploaded = {};
 
@@ -7,7 +5,7 @@ roles.forEach(div => {
   const role = div.dataset.role;
   const input = div.querySelector('input');
   const canvas = div.querySelector('canvas');
-  const btn = div.querySelector('.btn-upload'); // 유지하되 자동 업로드
+  const btn = div.querySelector('.btn-upload');
   let ctx = canvas.getContext('2d');
 
   input.addEventListener('change', e => {
@@ -21,51 +19,37 @@ roles.forEach(div => {
       ctx.drawImage(img, 0, 0, 224, 224);
       canvas.style.display = 'block';
       btn.disabled = false;
-      // 자동 업로드 바로 실행
       uploadImage(role, canvas, btn);
-    };
-    img.onerror = () => {
-      alert(`이미지를 불러올 수 없습니다: ${file.name}`);
     };
     img.src = url;
   });
 });
 
 async function uploadImage(role, canvas, btn){
-  try {
-    const blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg'));
-    const form = new FormData();
-    form.append('role', role);
-    form.append('image', blob, role + '.jpg');
+  const blob = await new Promise(res => canvas.toBlob(res, 'image/jpeg'));
+  const form = new FormData();
+  form.append('role', role);
+  form.append('image', blob, role + '.jpg');
 
-    const res = await fetch('/upload', {
-      method:'POST',
-      body: form
-    });
-    const data = await res.json();
+  const res = await fetch('/upload', {
+    method:'POST',
+    body: form
+  });
+  const data = await res.json();
 
-    if(data.status==='ok'){
-      uploaded[role] = true;
-      btn.disabled = true;
-      checkReady();
-      console.log(`[업로드 완료] ${role}`);
-    } else {
-      alert(`업로드 실패 (${role}): ${data.error || '서버 오류'}`);
-    }
-  } catch(err){
-    console.error(`[업로드 중 오류] ${role}`, err);
-    alert(`업로드 중 오류가 발생했습니다 (${role})`);
+  if(data.status==='ok'){
+    uploaded[role] = true;
+    btn.disabled = true;
+    checkReady();
+  } else {
+    alert(`업로드 실패: ${data.error}`);
   }
 }
 
 document.getElementById('btn-compare').addEventListener('click', () => {
   fetch('/compare', { method:'POST' })
     .then(r => r.json())
-    .then(data => showResults(data))
-    .catch(err => {
-      console.error('분석 요청 실패', err);
-      alert('분석 요청 중 오류가 발생했습니다');
-    });
+    .then(data => showResults(data));
 });
 
 function checkReady(){
