@@ -1,7 +1,31 @@
-/* static/css/style.css */
-body { font-family: sans-serif; padding: 20px; }
-#roles { display: grid; grid-template-columns: repeat(auto-fit,minmax(150px,1fr)); gap: 20px; }
-.role { border:1px solid #ccc; padding:10px; text-align:center; }
-.crop-canvas { width: 100%; height: auto; display: none; margin-top:10px; }
-.btn-upload { margin-top:5px; }
-#results { margin-top:20px; }
+body {
+  font-family: sans-serif;
+  padding: 20px;
+}
+
+#roles {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 20px;
+}
+
+.role {
+  border: 1px solid #ccc;
+  padding: 10px;
+  text-align: center;
+}
+
+.crop-canvas {
+  width: 100%;
+  height: auto;
+  display: none;
+  margin-top: 10px;
+}
+
+.btn-upload {
+  margin-top: 5px;
+}
+
+#results {
+  margin-top: 20px;
+}
