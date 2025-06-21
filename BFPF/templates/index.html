@@ -1,26 +1,69 @@
-<!-- templates/index.html -->
 <!DOCTYPE html>
 <html lang="ko">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>우리 아이와 가장 닮은 가족</title>
+  <title>우리 아이와 가장 닮은 가족 찾기</title>
   <link rel="stylesheet" href="/static/css/style.css">
+  <style>
+    body { font-family: sans-serif; padding: 20px; }
+    #roles { display: grid; grid-template-columns: repeat(auto-fit,minmax(150px,1fr)); gap: 20px; }
+    .role { border:1px solid #ccc; padding:10px; text-align:center; }
+    .crop-canvas { width: 100%; height: auto; display: none; margin-top:10px; }
+    .btn-upload { margin-top:5px; }
+    #results { margin-top:20px; }
+  </style>
 </head>
 <body>
   <h1>우리 아이와 가장 닮은 가족 찾기</h1>
   <div id="roles">
-    {% for r in roles %}
-    <div class="role" data-role="{{r}}">
-      <p>{{ labels[r] }}</p>
+    <div class="role" data-role="child">
+      <p>아이</p>
       <input type="file" accept="image/*">
       <canvas class="crop-canvas"></canvas>
       <button class="btn-upload" disabled>업로드</button>
     </div>
-    {% endfor %}
+    <div class="role" data-role="father">
+      <p>아빠</p>
+      <input type="file" accept="image/*">
+      <canvas class="crop-canvas"></canvas>
+      <button class="btn-upload" disabled>업로드</button>
+    </div>
+    <div class="role" data-role="mother">
+      <p>엄마</p>
+      <input type="file" accept="image/*">
+      <canvas class="crop-canvas"></canvas>
+      <button class="btn-upload" disabled>업로드</button>
+    </div>
+    <div class="role" data-role="pgrandpa">
+      <p>친할아버지</p>
+      <input type="file" accept="image/*">
+      <canvas class="crop-canvas"></canvas>
+      <button class="btn-upload" disabled>업로드</button>
+    </div>
+    <div class="role" data-role="pgrandma">
+      <p>친할머니</p>
+      <input type="file" accept="image/*">
+      <canvas class="crop-canvas"></canvas>
+      <button class="btn-upload" disabled>업로드</button>
+    </div>
+    <div class="role" data-role="mgrandpa">
+      <p>외할아버지</p>
+      <input type="file" accept="image/*">
+      <canvas class="crop-canvas"></canvas>
+      <button class="btn-upload" disabled>업로드</button>
+    </div>
+    <div class="role" data-role="mgrandma">
+      <p>외할머니</p>
+      <input type="file" accept="image/*">
+      <canvas class="crop-canvas"></canvas>
+      <button class="btn-upload" disabled>업로드</button>
+    </div>
   </div>
+
   <button id="btn-compare" disabled>분석 시작</button>
   <div id="results"></div>
+
   <script src="/static/js/main.js"></script>
 </body>
 </html>
