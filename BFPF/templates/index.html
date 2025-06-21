@@ -1,1 +1,26 @@
-
+<!-- templates/index.html -->
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>우리 아이와 가장 닮은 가족</title>
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+  <h1>우리 아이와 가장 닮은 가족 찾기</h1>
+  <div id="roles">
+    {% for r in roles %}
+    <div class="role" data-role="{{r}}">
+      <p>{{ labels[r] }}</p>
+      <input type="file" accept="image/*">
+      <canvas class="crop-canvas"></canvas>
+      <button class="btn-upload" disabled>업로드</button>
+    </div>
+    {% endfor %}
+  </div>
+  <button id="btn-compare" disabled>분석 시작</button>
+  <div id="results"></div>
+  <script src="/static/js/main.js"></script>
+</body>
+</html>
