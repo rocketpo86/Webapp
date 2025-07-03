@@ -1,0 +1,8 @@
+flask
+requests
+konlpy
+gspread
+oauth2client
+pandas
+beautifulsoup4
+lxml
